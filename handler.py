@@ -38,15 +38,14 @@ async def handle_msg(m, cb):
             if len(assertion) == 0 or assertion is None:
                 raise Exception('login failed :(')
 
-            await cb.ws.send_str('|/trn {0},0,{1}'.format(username,
-                                                          assertion))
+            await cb.send('', '/trn {0},0,{1}'.format(username, assertion))
 
         elif downmsg == 'updateuser':
             if utils.condense(msg[2]) == utils.condense(cb.username):
                 print("Logged in!")
                 rooms = cb.config['DEFAULT']['rooms']
                 for room in rooms.split(','):
-                    await cb.ws.send_str('|/join {}'.format(room))
+                    await cb.send('', '/join {}'.format(room))
 
         elif downmsg in ['c', 'c:', 'pm']:
             await handle_chat(msg[1:], room, cb)
@@ -60,7 +59,7 @@ async def handle_chat(m, room, cb):
 
     if m_info.get('who').lower() == cb.config['DEFAULT']['master']:
         if m_info.get('what') == 'ping':
-            await cb.ws.send_str('{}|pong'.format(room))
+            await cb.send(room, 'pong')
         elif m_info.get('what').startswith('repeat '):
             new_msg = m_info.get('what').replace('repeat ', '')
-            await cb.ws.send_str('{}|{}'.format(room, new_msg))
+            await cb.send(room, new_msg)

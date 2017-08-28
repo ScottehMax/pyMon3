@@ -25,3 +25,9 @@ class Chatbot:
         while True:
             msg = await self.ws.receive()
             await handler.handle_msg(msg.data, self)
+
+    async def send(self, room, msg):
+        await self.ws.send_str("{}|{}".format(room, msg))
+
+    async def send_pm(self, user, msg):
+        await self.send('', '/pm {},{}'.format(user, msg))
