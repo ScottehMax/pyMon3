@@ -22,6 +22,7 @@ async def create_cb(chatbot_id, cbs, config):
     cb = chatbot.Chatbot(id=chatbot_id,
                          cbs=cbs,
                          config=config)
+    await cb._init_plugins()
     await cb._connect()
     return cb
 

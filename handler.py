@@ -9,14 +9,13 @@ async def handle_msg(m, cb):
     messages = m.split('\n')
 
     if messages[0][0] == '>':
-        print(messages)
         room = messages.pop(0)[1:]
     else:
         room = 'lobby'
 
     for rawmessage in messages:
+        print('%s%s' % (room, rawmessage))
         rawmessage = "%s\n%s" % ('>' + room, rawmessage)
-        print(rawmessage)
 
         msg = rawmessage.split("|")
 
@@ -57,9 +56,9 @@ async def handle_chat(m, room, cb):
     if int(m_info.get('when')) <= cb.logintime:
         return
 
-    if m_info.get('who').lower() == cb.config['DEFAULT']['master']:
-        if m_info.get('what') == 'ping':
-            await cb.send(room, 'pong')
-        elif m_info.get('what').startswith('repeat '):
-            new_msg = m_info.get('what').replace('repeat ', '')
-            await cb.send(room, new_msg)
+    for plugin in cb.plugins:
+        match = await plugin.match(m_info)
+        if match:
+            response = await plugin.response(m_info)
+            if response:
+                await cb.send(room, response)

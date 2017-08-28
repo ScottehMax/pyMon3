@@ -85,5 +85,4 @@ async def make_msg_info(msg, room, ws, id, config):
                      'target': msg[2][1:],
                      'when': int(time.time()),
                      'what': msg[3]})
-    print(info)
     return info
