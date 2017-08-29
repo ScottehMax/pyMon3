@@ -65,6 +65,7 @@ async def make_msg_info(msg, room, ws, id, config):
         info.update({'room': room,
                      'who': msg[1][1:],
                      'allwho': msg[1],
+                     'when': int(time.time()),
                      'what': ''})
 
     elif info['where'] == 'n':
@@ -72,6 +73,7 @@ async def make_msg_info(msg, room, ws, id, config):
                      'who': msg[1][1:],
                      'allwho': msg[1],
                      'oldname': msg[2],
+                     'when': int(time.time()),
                      'what': ''})
 
     elif info['where'] == 'users':
@@ -86,3 +88,25 @@ async def make_msg_info(msg, room, ws, id, config):
                      'when': int(time.time()),
                      'what': msg[3]})
     return info
+
+
+def ppsql(cursor, rows):
+    widths = []
+    columns = []
+    tavnit = '|'
+    separator = '+'
+    res = ''
+    for i, cd in enumerate(cursor.description):
+        max_l = max([len(x[i]) for x in rows])
+        widths.append(max(max_l, len(cd[0])))
+        columns.append(cd[0])
+    for w in widths:
+        tavnit += " %-"+"%ss |" % (w,)
+        separator += '-'*w + '--+'
+    res += separator + '\n'
+    res += tavnit % tuple(columns) + '\n'
+    res += separator + '\n'
+    for row in rows:
+        res += tavnit % row + '\n'
+    res += separator
+    return res

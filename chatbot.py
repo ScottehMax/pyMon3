@@ -16,7 +16,7 @@ class Chatbot:
         self.username = self.config[self.id]['username']
         self.server = self.config['DEFAULT']['server']
         self.master = self.config['DEFAULT']['master']
-        self.plugins = []
+        self.rooms = {}
 
     async def _connect(self):
         session = aiohttp.ClientSession()
@@ -25,12 +25,31 @@ class Chatbot:
         self.logintime = int(time.time())
         await self.get_message()
 
-    async def _init_plugins(self):
+    async def reload_plugins(self):
+        self.plugins = []
+        self.config.read('config.ini')
         plugin_list = self.config[self.id]['plugins'].split(',')
         for plugin_fn in plugin_list:
             mod_name, ext = os.path.splitext(plugin_fn)
             mod = importlib.import_module('plugins.{}'.format(mod_name))
-            self.plugins.append(mod.setup(self))
+            mod = importlib.reload(mod)
+            plugin = mod.setup(self)
+            if type(plugin) != list:
+                self.plugins.append(plugin)
+            else:
+                self.plugins += plugin
+
+    async def _init_plugins(self):
+        self.plugins = []
+        plugin_list = self.config[self.id]['plugins'].split(',')
+        for plugin_fn in plugin_list:
+            mod_name, ext = os.path.splitext(plugin_fn)
+            mod = importlib.import_module('plugins.{}'.format(mod_name))
+            plugin = mod.setup(self)
+            if type(plugin) != list:
+                self.plugins.append(plugin)
+            else:
+                self.plugins += plugin
 
     async def get_message(self):
         async for msg in self.ws:
