@@ -77,6 +77,15 @@ async def handle_msg(m, cb):
                 if condense(user) == condense(msg[2]):
                     cb.rooms[room].users.remove(user)
 
+        elif downmsg == 'n':
+            newuser, olduser, userfound = msg[2], msg[3], False
+            for user in cb.rooms[room].users:
+                if condense(user) == condense(olduser):
+                    cb.rooms[room].users.remove(user)
+                    userfound = True
+            if userfound:
+                cb.rooms[room].users.append(newuser)
+
         if downmsg in ['c', 'c:', 'pm', 'j', 'l']:
             await handle_chat(msg[1:], room, cb)
 
