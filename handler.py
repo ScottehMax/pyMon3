@@ -1,5 +1,6 @@
 import asyncio
 import random
+import re
 import time
 
 import utils
@@ -46,8 +47,20 @@ async def handle_msg(m, cb):
                 for room in rooms.split(','):
                     await cb.send('', '/join {}'.format(room))
 
+        elif downmsg == 'formats':
+            data = '|'.join(msg[2:])
+            cb.battle_formats = list(map(utils.condense,
+                                         (re.sub(r'\|\d\|[^|]+', '', ('|' + re.sub(r'(,[0-9a-f])', '', data)))
+                                          ).split('|')))[1:]
+
         elif downmsg in ['c', 'c:', 'pm']:
             await handle_chat(msg[1:], room, cb)
+
+
+async def plugin_response(plugin, room, m_info, cb):
+    response = await plugin.response(m_info)
+    if response:
+        await cb.send(room, response)
 
 
 async def handle_chat(m, room, cb):
@@ -59,6 +72,6 @@ async def handle_chat(m, room, cb):
     for plugin in cb.plugins:
         match = await plugin.match(m_info)
         if match:
-            response = await plugin.response(m_info)
-            if response:
-                await cb.send(room, response)
+            asyncio.run_coroutine_threadsafe(plugin_response(plugin, room,
+                                                             m_info, cb),
+                                             loop=cb.loop)

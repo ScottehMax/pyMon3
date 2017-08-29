@@ -33,8 +33,7 @@ class Chatbot:
             self.plugins.append(mod.setup(self))
 
     async def get_message(self):
-        while True:
-            msg = await self.ws.receive()
+        async for msg in self.ws:
             await handler.handle_msg(msg.data, self)
 
     async def send(self, room, msg):
