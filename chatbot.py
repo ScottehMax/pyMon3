@@ -15,15 +15,25 @@ class Chatbot:
         print("({}) Instance created".format(self.id))
         self.username = self.config[self.id]['username']
         self.server = self.config['DEFAULT']['server']
-        self.master = self.config['DEFAULT']['master']
+        self.master = self.config[self.id]['master']
         self.rooms = {}
 
     async def _connect(self):
         session = aiohttp.ClientSession()
         ws_url = 'ws://{}/showdown/websocket'.format(self.server)
-        self.ws = await session.ws_connect(ws_url)
-        self.logintime = int(time.time())
-        await self.get_message()
+        self.connected = False
+        timeout = 1
+        while not self.connected:
+            try:
+                await asyncio.sleep(timeout)
+                self.ws = await session.ws_connect(ws_url)
+                self.connected = True
+                timeout = 1
+                self.logintime = int(time.time())
+                await self.get_message()
+            except aiohttp.ClientConnectorError as e:
+                timeout += 1
+                print(e)
 
     async def reload_plugins(self):
         self.plugins = []
@@ -53,7 +63,9 @@ class Chatbot:
 
     async def get_message(self):
         async for msg in self.ws:
-            await handler.handle_msg(msg.data, self)
+            if msg.type == aiohttp.WSMsgType.TEXT:
+                await handler.handle_msg(msg.data, self)
+        self.connected = False
 
     async def send(self, room, msg):
         await self.ws.send_str("{}|{}".format(room, msg))

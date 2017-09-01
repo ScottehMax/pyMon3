@@ -90,6 +90,25 @@ async def make_msg_info(msg, room, ws, id, config):
     return info
 
 
+async def haste(message):
+    async with aiohttp.ClientSession() as session:
+        async with session.post('https://hastebin.com/documents',
+                                data=message) as r:
+            resp = await r.text()
+            j = json.loads(resp)
+    if 'key' in j:
+        result = "https://hastebin.com/{}".format(j['key'])
+    else:
+        result = "Didn't work"
+    return result
+
+
+def execute_sql(sql, cb):
+    cb.c.execute(sql)
+    result = cb.c.fetchall()
+    return ppsql(cb.c, result)
+
+
 def ppsql(cursor, rows):
     widths = []
     columns = []

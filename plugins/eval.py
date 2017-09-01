@@ -1,16 +1,21 @@
 from plugins.plugin import Plugin
-from utils import condense
+import utils
 
 
 class Eval(Plugin):
     async def match(self, info):
-        return (condense(info.get('who')) == self.cb.master and
+        return (utils.condense(info.get('who')) == self.cb.master and
                 info.get('what').startswith('.eval'))
 
     async def response(self, info):
         command = info.get('what')[6:]
         try:
-            result = eval(command)
+            if command.startswith('await '):
+                command = command[6:]
+                result = await eval(command)
+                print(result)
+            else:
+                result = eval(command)
             return result
         except Exception as e:
             await self.cb.send_pm(self.cb.master, str(e) + ': ' + e.__doc__)
@@ -18,13 +23,17 @@ class Eval(Plugin):
 
 class Exec(Plugin):
     async def match(self, info):
-        return (condense(info.get('who')) == self.cb.master and
+        return (utils.condense(info.get('who')) == self.cb.master and
                 info.get('what').startswith('.exec'))
 
     async def response(self, info):
         command = info.get('what')[6:]
         try:
-            exec(command)
+            if command.startswith('await '):
+                command = command[6:]
+                result = await exec(command)
+            else:
+                exec(command)
             await self.cb.send_pm(self.cb.master, 'Success!')
         except Exception as e:
             await self.cb.send_pm(self.cb.master, str(e) + ': ' + e.__doc__)

@@ -45,7 +45,7 @@ async def handle_msg(m, cb):
         elif downmsg == 'updateuser':
             if condense(msg[2]) == condense(cb.username):
                 print("Logged in!")
-                rooms = cb.config['DEFAULT']['rooms']
+                rooms = cb.config[cb.id]['rooms']
                 for room in rooms.split(','):
                     await cb.send('', '/join {}'.format(room))
 
