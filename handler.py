@@ -86,7 +86,7 @@ async def handle_msg(m, cb):
             if userfound:
                 cb.rooms[room].users.append(newuser)
 
-        if downmsg in ['c', 'c:', 'pm', 'j', 'l']:
+        if downmsg in ['c', 'c:', 'pm', 'j', 'l', 'html']:
             await handle_chat(msg[1:], room, cb)
 
 
@@ -109,8 +109,9 @@ async def plugin_response(plugin, room, m_info, cb):
 
 async def handle_chat(m, room, cb):
     m_info = await make_msg_info(m, room, cb.ws, cb.id, cb.config)
+    m_time = m_info.get('when')
 
-    if room != 'lobby' and int(m_info.get('when')) <= cb.rooms[room].join_time:
+    if room != 'lobby' and m_time and int(m_time) <= cb.rooms[room].join_time:
         return
 
     for plugin in cb.plugins:

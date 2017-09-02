@@ -87,6 +87,12 @@ async def make_msg_info(msg, room, ws, id, config):
                      'target': msg[2][1:],
                      'when': int(time.time()),
                      'what': msg[3]})
+
+    elif info['where'] == 'html':
+        info.update({'who': '',
+                     'when': int(time.time()),
+                     'what': msg[1]})
+
     return info
 
 
