@@ -16,6 +16,7 @@ class Chatbot:
         self.username = self.config[self.id]['username']
         self.server = self.config['DEFAULT']['server']
         self.master = self.config[self.id]['master']
+        self.queue = asyncio.Queue(loop=self.loop)
         self.rooms = {}
 
     async def _connect(self):
@@ -30,6 +31,7 @@ class Chatbot:
                 self.connected = True
                 timeout = 1
                 self.logintime = int(time.time())
+                asyncio.run_coroutine_threadsafe(self.run_message_queue(), loop=self.loop)
                 await self.get_message()
             except aiohttp.ClientConnectorError as e:
                 timeout += 1
@@ -67,8 +69,14 @@ class Chatbot:
                 await handler.handle_msg(msg.data, self)
         self.connected = False
 
+    async def run_message_queue(self):
+        while True:
+            msg = await self.queue.get()
+            await self.ws.send_str(msg)
+            await asyncio.sleep(0.3)
+
     async def send(self, room, msg):
-        await self.ws.send_str("{}|{}".format(room, msg))
+        await self.queue.put("{}|{}".format(room, msg))
 
     async def send_pm(self, user, msg):
         await self.send('', '/pm {},{}'.format(user, msg))
