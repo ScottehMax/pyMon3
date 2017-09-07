@@ -1,4 +1,5 @@
 import asyncio
+import json
 import random
 import re
 import time
@@ -24,6 +25,9 @@ async def handle_msg(m, cb):
 
         if len(msg) < 2:
             continue
+
+        if room.startswith('battle-') and cb.rooms.get(room):
+            await cb.rooms[room].battle.handle(msg)
 
         downmsg = msg[1].lower()
 
@@ -55,7 +59,10 @@ async def handle_msg(m, cb):
                 r'\|\d\|[^|]+', '', ('|' + re.sub(r'(,[0-9a-f])', '', data)))).split('|')))[1:]
 
         elif downmsg == 'init':
-            cb.rooms[room] = Room(room)
+            cb.rooms[room] = Room(room, cb)
+
+        elif downmsg == 'deinit':
+            del cb.rooms[room]
 
         elif downmsg == 'title':
             cb.rooms[room].title = msg[2]
@@ -86,6 +93,15 @@ async def handle_msg(m, cb):
             if userfound:
                 cb.rooms[room].users.append(newuser)
 
+        elif downmsg == 'updatechallenges':
+            challs = json.loads(msg[2])
+            for chall in challs['challengesFrom']:
+                if challs['challengesFrom'][chall] == 'gen7doublescustomgame':
+                    if cb.teams:
+                        team = random.choice(cb.teams['gen7doublescustomgame'])
+                        await cb.send('', '/utm {}'.format(team))
+                        await cb.send('', '/accept {}'.format(chall))
+
         if downmsg in ['c', 'c:', 'pm', 'j', 'l', 'html']:
             await handle_chat(msg[1:], room, cb)
 
@@ -100,7 +116,7 @@ async def plugin_response(plugin, room, m_info, cb):
                 await cb.send(room, response)
     except Exception as e:
         print("Crashed: %s, %s, %s" %
-                         (e.args, plugin, type(e)))
+              (e.args, plugin, type(e)))
         traceback.print_exception(e)
         await cb.send_pm(cb.master,
                          "Crashed: %s, %s, %s" %
@@ -115,7 +131,15 @@ async def handle_chat(m, room, cb):
         return
 
     for plugin in cb.plugins:
-        match = await plugin.match(m_info)
+        try:
+            match = await plugin.match(m_info)
+        except Exception as e:
+            print("Crashed in match: %s, %s, %s" %
+                  (e.args, plugin, type(e)))
+            traceback.print_exception(e)
+            await cb.send_pm(cb.master,
+                             "Crashed: %s, %s, %s" %
+                             (e.args, plugin, type(e)))
         if match:
             asyncio.run_coroutine_threadsafe(plugin_response(plugin, room,
                                                              m_info, cb),

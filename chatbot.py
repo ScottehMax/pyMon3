@@ -1,5 +1,6 @@
 import asyncio
 import importlib
+import json
 import os
 import time
 
@@ -17,6 +18,7 @@ class Chatbot:
         self.server = self.config['DEFAULT']['server']
         self.master = self.config[self.id]['master']
         self.queue = asyncio.Queue(loop=self.loop)
+        self.teams = json.loads(self.config[self.id].get('teams'))
         self.rooms = {}
 
     async def _connect(self):
