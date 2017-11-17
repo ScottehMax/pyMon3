@@ -15,7 +15,7 @@ async def handle_msg(m, cb):
     if messages[0][0] == '>':
         room = messages.pop(0)[1:]
     else:
-        room = 'lobby'
+        room = 'global'
 
     for rawmessage in messages:
         print('%s%s' % (room, rawmessage))
@@ -127,7 +127,7 @@ async def handle_chat(m, room, cb):
     m_info = await make_msg_info(m, room, cb.ws, cb.id, cb.config)
     m_time = m_info.get('when')
 
-    if room != 'lobby' and m_time and int(m_time) <= cb.rooms[room].join_time:
+    if room != 'global' and m_time and int(m_time) <= cb.rooms[room].join_time:
         return
 
     for plugin in cb.plugins:
