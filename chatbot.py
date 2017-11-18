@@ -13,7 +13,7 @@ class Chatbot:
     def __init__(self, **kwargs):
         for arg in kwargs:
             setattr(self, arg, kwargs[arg])
-        print("({}) Instance created".format(self.id))
+        print(f"({self.id}) Instance created")
         self.username = self.config[self.id]['username']
         self.server = self.config['DEFAULT']['server']
         self.master = self.config[self.id]['master']
@@ -23,7 +23,7 @@ class Chatbot:
 
     async def _connect(self):
         session = aiohttp.ClientSession()
-        ws_url = 'ws://{}/showdown/websocket'.format(self.server)
+        ws_url = f'ws://{self.server}/showdown/websocket'
         self.connected = False
         timeout = 1
         while not self.connected:
@@ -45,7 +45,7 @@ class Chatbot:
         plugin_list = self.config[self.id]['plugins'].split(',')
         for plugin_fn in plugin_list:
             mod_name, ext = os.path.splitext(plugin_fn)
-            mod = importlib.import_module('plugins.{}'.format(mod_name))
+            mod = importlib.import_module(f'plugins.{mod_name}')
             mod = importlib.reload(mod)
             plugin = mod.setup(self)
             if type(plugin) != list:
@@ -58,7 +58,7 @@ class Chatbot:
         plugin_list = self.config[self.id]['plugins'].split(',')
         for plugin_fn in plugin_list:
             mod_name, ext = os.path.splitext(plugin_fn)
-            mod = importlib.import_module('plugins.{}'.format(mod_name))
+            mod = importlib.import_module(f'plugins.{mod_name}')
             plugin = mod.setup(self)
             if type(plugin) != list:
                 self.plugins.append(plugin)
@@ -78,7 +78,7 @@ class Chatbot:
             await asyncio.sleep(0.3)
 
     async def send(self, room, msg):
-        await self.queue.put("{}|{}".format(room, msg))
+        await self.queue.put(f"{room}|{msg}")
 
     async def send_pm(self, user, msg):
-        await self.send('', '/pm {},{}'.format(user, msg))
+        await self.send('', f'/pm {user},{msg}')

@@ -44,14 +44,14 @@ async def handle_msg(m, cb):
             if len(assertion) == 0 or assertion is None:
                 raise Exception('login failed :(')
 
-            await cb.send('', '/trn {0},0,{1}'.format(username, assertion))
+            await cb.send('', f'/trn {username},0,{assertion}')
 
         elif downmsg == 'updateuser':
             if condense(msg[2]) == condense(cb.username):
                 print("Logged in!")
                 rooms = cb.config[cb.id]['rooms']
                 for room in rooms.split(','):
-                    await cb.send('', '/join {}'.format(room))
+                    await cb.send('', f'/join {room}')
 
         elif downmsg == 'formats':
             data = '|'.join(msg[2:])
@@ -99,8 +99,8 @@ async def handle_msg(m, cb):
                 if challs['challengesFrom'][chall] == 'gen7doublescustomgame':
                     if cb.teams:
                         team = random.choice(cb.teams['gen7doublescustomgame'])
-                        await cb.send('', '/utm {}'.format(team))
-                        await cb.send('', '/accept {}'.format(chall))
+                        await cb.send('', f'/utm {team}')
+                        await cb.send('', f'/accept {chall}')
 
         if downmsg in ['c', 'c:', 'pm', 'j', 'l', 'html']:
             await handle_chat(msg[1:], room, cb)

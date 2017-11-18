@@ -103,7 +103,7 @@ async def haste(message):
             resp = await r.text()
             j = json.loads(resp)
     if 'key' in j:
-        result = "https://hastebin.com/{}".format(j['key'])
+        result = f"https://hastebin.com/{j['key']}"
     else:
         result = "Didn't work"
     return result
