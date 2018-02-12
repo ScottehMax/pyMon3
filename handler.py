@@ -18,8 +18,8 @@ async def handle_msg(m, cb):
         room = 'global'
 
     for rawmessage in messages:
-        print('%s%s' % (room, rawmessage))
-        rawmessage = "%s\n%s" % ('>' + room, rawmessage)
+        print(f'{room}{rawmessage}')
+        rawmessage = f'{">" + room}\n{rawmessage}'
 
         msg = rawmessage.split("|")
 
@@ -115,12 +115,10 @@ async def plugin_response(plugin, room, m_info, cb):
             else:
                 await cb.send(room, response)
     except Exception as e:
-        print("Crashed: %s, %s, %s" %
-              (e.args, plugin, type(e)))
+        print(f"Crashed: {e.args}, {plugin}, {type(e)}")
         traceback.print_exception(e)
         await cb.send_pm(cb.master,
-                         "Crashed: %s, %s, %s" %
-                         (e.args, plugin, type(e)))
+                         f"Crashed: {e.args}, {plugin}, {type(e)}")
 
 
 async def handle_chat(m, room, cb):
@@ -134,12 +132,10 @@ async def handle_chat(m, room, cb):
         try:
             match = await plugin.match(m_info)
         except Exception as e:
-            print("Crashed in match: %s, %s, %s" %
-                  (e.args, plugin, type(e)))
+            print(f"Crashed in match: {e.args}, {plugin}, {type(e)}")
             traceback.print_exception(e)
             await cb.send_pm(cb.master,
-                             "Crashed: %s, %s, %s" %
-                             (e.args, plugin, type(e)))
+                             f"Crashed in match: {e.args}, {plugin}, {type(e)}")
         if match:
             asyncio.run_coroutine_threadsafe(plugin_response(plugin, room,
                                                              m_info, cb),

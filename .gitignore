@@ -2,5 +2,6 @@ __pycache__/
 venv/
 experimental/
 plugins/
+data/
 config.ini
 *.db
