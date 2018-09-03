@@ -135,3 +135,24 @@ def ppsql(cursor, rows):
         res += tavnit % row + '\n'
     res += separator
     return res
+
+
+def get_format_info(format_text):
+    results = []
+    num = int(format_text, 16)
+    if num & 1:
+        # this format requires a team.
+        results.append('Requires Team')
+    if num & 2:
+        # this format can be played on the ladder
+        results.append('Search')
+    if num & 4:
+        # this format can be used in private challenges
+        results.append('Challenge')
+    if num & 8:
+        # this format can be used in tournaments
+        results.append('Tournaments')
+    if num & 16:
+        # this format forces level 50
+        results.append('Forced Level 50')
+    return results

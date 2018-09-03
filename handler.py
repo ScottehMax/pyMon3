@@ -5,7 +5,7 @@ import re
 import time
 import traceback
 
-from utils import login, unreg_login, make_msg_info, condense
+from utils import login, unreg_login, make_msg_info, condense, get_format_info
 from room import Room
 
 
@@ -54,9 +54,22 @@ async def handle_msg(m, cb):
                     await cb.send('', f'/join {room}')
 
         elif downmsg == 'formats':
-            data = '|'.join(msg[2:])
-            cb.battle_formats = list(map(condense, (re.sub(
-                r'\|\d\|[^|]+', '', ('|' + re.sub(r'(,[0-9a-f])', '', data)))).split('|')))[1:]
+            formats = msg[2:]
+            res = {}
+            format_name = False
+            cur_format = None
+            for format in formats:
+                if format_name:
+                    res[format] = []
+                    cur_format = format
+                    format_name = False
+                    continue
+                if format[0] == ',':
+                    format_name = True
+                    continue
+                name, type = format.split(',', 1)
+                res[cur_format].append( {'name': name, 'info': get_format_info(type)} )
+            cb.battle_formats = res
 
         elif downmsg == 'init':
             cb.rooms[room] = Room(room, cb)
