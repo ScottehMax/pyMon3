@@ -47,11 +47,18 @@ async def handle_msg(m, cb):
             await cb.send('', f'/trn {username},0,{assertion}')
 
         elif downmsg == 'updateuser':
-            if condense(msg[2]) == condense(cb.username):
+            if '@' in msg[2][1:]:
+                user, status = msg[2].rsplit('@', 1)
+            else:
+                user = msg[2]
+            if condense(user) == condense(cb.username):
                 print("Logged in!")
                 rooms = cb.config[cb.id]['rooms']
+                # join rooms
                 for room in rooms.split(','):
                     await cb.send('', f'/join {room}')
+                # send status to last room
+                await cb.send(room, f'/status {cb.status}')
 
         elif downmsg == 'formats':
             formats = msg[2:]
@@ -89,16 +96,27 @@ async def handle_msg(m, cb):
         elif downmsg == ':':
             cb.rooms[room].join_time = int(msg[2])
 
-        elif downmsg == 'j' and condense(msg[2]) not in cb.rooms[room].users:
-            cb.rooms[room].users.append(msg[2])
+        elif downmsg == 'j':
+            if '@' in msg[2][1:]:
+                user, status = msg[2].rsplit('@', 1)
+            else:
+                user = msg[2]
+            if condense(user) not in cb.rooms[room].users:
+                cb.rooms[room].users.append(user)
 
         elif downmsg == 'l':
-            for user in cb.rooms[room].users:
-                if condense(user) == condense(msg[2]):
-                    cb.rooms[room].users.remove(user)
+            if '@' in msg[2][1:]:
+                user, status = msg[2].rsplit('@', 1)
+            else:
+                user = msg[2]
+            for existing_user in cb.rooms[room].users:
+                if condense(existing_user) == condense(user):
+                    cb.rooms[room].users.remove(existing_user)
 
         elif downmsg == 'n':
             newuser, olduser, userfound = msg[2], msg[3], False
+            if '@' in newuser[1:]:
+                newuser, status = newuser[1:].rsplit('@', 1)
             for user in cb.rooms[room].users:
                 if condense(user) == condense(olduser):
                     cb.rooms[room].users.remove(user)

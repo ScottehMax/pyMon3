@@ -17,6 +17,7 @@ class Chatbot:
         self.username = self.config[self.id]['username']
         self.server = self.config['DEFAULT']['server']
         self.master = self.config[self.id]['master']
+        self.status = self.config[self.id]['status']
         self.queue = asyncio.Queue(loop=self.loop)
         self.teams = json.loads(self.config[self.id].get('teams'))
         self.rooms = {}
